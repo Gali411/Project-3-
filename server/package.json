@@ -1,0 +1,30 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "description": "Backend server for the project",
+    "main": "src/index.js",
+    "type": "module",
+    "scripts": {
+      "build": "echo 'Build step skipped as TypeScript is no longer used'",
+      "seed": "node src/seeds/seed.js",
+      "start": "node src/index.js",
+      "dev": "nodemon src/index.js",
+      "test": "vitest"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "express": "^4.19.2",
+      "mongoose": "^8.0.0",
+      "cors": "^2.8.5",
+      "dotenv": "^16.0.3",
+      "axios": "^1.2.0"
+    },
+    "devDependencies": {
+      "nodemon": "^3.1.0",
+      "vitest": "^2.0.1",
+      "msw": "^2.3.1"
+    }
+  }
+  

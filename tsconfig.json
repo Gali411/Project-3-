@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES6",                      // Specify ECMAScript target version
+    "module": "CommonJS",                 // Use CommonJS module system
+    "strict": true,                       // Enable all strict type-checking options
+    "esModuleInterop": true,              // Allow default imports from modules with no default export
+    "forceConsistentCasingInFileNames": true, // Enforce case-sensitive module imports
+    "skipLibCheck": true                  // Skip type checking of declaration files
+  }
+}
