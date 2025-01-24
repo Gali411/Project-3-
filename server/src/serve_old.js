@@ -1,23 +1,28 @@
 import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
 import dotenv from 'dotenv';
-dotenv.config();
-
-// import path from 'node:path';
-// import db from './config/connection.js';
-// import routes from './routes/index.js';
-
+import cors from 'cors';
+import connectDB from './config/db.js';
+import typeDefs from './graphql/typeDefs.js';
+import resolvers from './graphql/resolvers.js';
+import context from './graphql/context.js';
 import axios from 'axios';
 
+dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 3001;
+connectDB();
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context,
+});
 
-// Serves static files in the entire client's dist folder
-app.use(express.static('../client/dist'));
+await server.start();
+server.applyMiddleware({ app });
 
-// app.use(routes);
+app.use(cors()); 
 app.get('/api/similar', async (req, res) => {
   const artist = req.query.artist;
   if (!artist) {
@@ -38,6 +43,7 @@ app.get('/api/similar', async (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`API server running on port ${3001}!`)
-})
+  console.log(`Server running on http://localhost:${PORT}${server.graphqlPath}`);
+});
