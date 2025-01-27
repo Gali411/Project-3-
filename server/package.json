@@ -2,13 +2,13 @@
     "name": "server",
     "version": "1.0.0",
     "description": "Backend server for the project",
-    "main": "src/index.js",
+    "main": "server.js",
     "type": "module",
     "scripts": {
         "build": "echo 'Build step skipped as TypeScript is no longer used'",
         "seed": "node src/seeds/seed.js",
-        "start": "node src/index.js",
-        "dev": "nodemon src/index.js",
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
         "test": "vitest"
     },
     "keywords": [],
