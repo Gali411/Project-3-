@@ -7,17 +7,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// Serves static files in the entire client's dist folder
-/* app.use(express.static(path.join(__dirname, '../client/dist')));
-
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
-*/
 
 app.get('/api/similar', async (req, res) => {
   const artist = req.query.artist;
@@ -45,6 +36,18 @@ app.get('/api/similar', async (req, res) => {
     lastFmData.toptracks.track.forEach((track, index) => {
       console.log(`${index + 1}. ${track.name} - Played ${track.playcount} times`);
       console.log(`   Listen here: ${track.url}`);
+    });
+
+    const tracks = lastFmData.toptracks.track.map((track, index) => ({
+      rank: index + 1,
+      name: track.name,
+      playcount: track.playcount,
+      url: track.url,
+    }));
+
+    res.json({
+      similarArtist,
+      tracks,
     });
 
   } catch (error) {
