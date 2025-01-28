@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { response } from 'express';
 import dotenv from 'dotenv';
 import axios from 'axios';
 
@@ -77,6 +77,10 @@ app.get('/api/similar', async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching data." });
   }
 });
+
+fetch('http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=cher&api_key=60863f5e56b8748fe6cb5ea1beb57a52&format=json')
+.then(response => response.json())
+.then(data => console.log(data.artist.image[4]))
 
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}!`);
