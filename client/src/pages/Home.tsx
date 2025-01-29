@@ -33,7 +33,7 @@ export default function Home() {
     fetch(`/api/similar?artist=${artist}`)
       .then((response) => response.json())
       .then((data) => {
-        setRecommendations(data.similarArtists); setLoading(false);
+        setRecommendations(data.similarArtists || []); setLoading(false);
       })
       .catch((error) => {
         setError('Something went wrong. Please try again later.');

@@ -25,7 +25,7 @@ const server = new ApolloServer({
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -38,7 +38,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Set the static directory
-app.use(express.static(path.join(__dirname, 'assets')));
+app.use(express.static(path.join(__dirname, '/assets')));
 
 
 const shuffleArray = (array) => {
