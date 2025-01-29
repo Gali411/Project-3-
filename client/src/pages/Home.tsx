@@ -50,37 +50,62 @@ export default function Home() {
         justifyContent: 'center',
         minHeight: '80vh',
         textAlign: 'center',
-        padding: 2,
-        backgroundColor: 'lightgray',
+        padding: 4,
+        backgroundColor: 'lightgrey',
       }}
     >
-      <Typography variant="h4" gutterBottom>
-        Artist Recommendations
+      <Typography variant="h3"
+        gutterBottom
+        sx={{
+          fontFamily: "'Roboto', sans-serif",
+          fontWeight: '700',
+          color: 'black',
+          textShadow: '2px 2px 5px rgba(0, 0, 0, 0.3)',
+          letterSpacing: '2px',
+          fontSize: '2.5rem', // Adjust size for prominence
+          marginBottom: 4,
+        }}
+      >
+        Find Me Music!
       </Typography>
 
-      <TextField
-        value={artist}
-        onChange={handleInputChange}
-        label="Enter artist name"
-        variant="filled"
-        fullWidth
-        className="custom-label" // Add custom CSS class here
-        sx={{
-          marginBottom: 6,
-          width: '100%',
-          maxWidth: 600,
-        }}
-      />
+      
 
-      <Button onClick={submit} variant="contained" disabled={loading}>
-        {loading ? 'Loading...' : 'Submit'}
-      </Button>
+<Box
+  sx={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 1,
+    width: '100%',
+    maxWidth: 600,
+    marginBottom: 2,
+  }}
+>
+  <TextField
+    value={artist}
+    onChange={handleInputChange}
+    label="Enter artist name"
+    variant="filled"
+    fullWidth
+    sx={{ flexGrow: 1 }}
+  />
+
+  <Button 
+    onClick={submit} 
+    variant="contained" 
+    disabled={loading}
+    sx={{ height: '56px' }} // Align button height with text field
+  >
+    {loading ? 'Loading...' : 'Submit'}
+  </Button>
+</Box>
 
       {error && <Typography color="error" sx={{ marginTop: 2 }}>{error}</Typography>}
 
-      <ImageList sx={{ width: 900, height: 800, marginTop: 4 }}>
+      <ImageList sx={{ width: 900, height: 800, marginTop: 2 }}>
         <ImageListItem key="Subheader" cols={2}>
-          <ListSubheader component="div">Artists List LIST</ListSubheader>
+          <ListSubheader component="div">Artists List</ListSubheader>
         </ImageListItem>
         {recommendations.map((item, index) => (
           <ImageListItem key={index}>
