@@ -57,11 +57,27 @@ const Home = () => {
         <div>
           {artists.map((artist) => (
             <div key={artist.artistName} style={{ marginBottom: '20px' }}>
-              {artist.image && (
+              {artist.image ? (
                 <img
                   src={artist.image}
                   alt={artist.artistName}
-                  style={{ width: '150px', height: '150px', borderRadius: '8px' }}
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <img
+                  src="/path/to/fallback-image.jpg" 
+                  alt="Fallback"
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                  }}
                 />
               )}
               <h2>{artist.artistName}</h2>
