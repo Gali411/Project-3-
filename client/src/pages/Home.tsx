@@ -1,9 +1,6 @@
 
 
-import image_1 from '../assets/music/image_1.avif';
-import image_2 from '../assets/music/image_2.avif';
-import image_3 from '../assets/music/image_3.avif';
-import image_4 from '../assets/music/image_4.avif';
+import React, { useState } from 'react';
 
 import ImageList from '@mui/material/ImageList';
 import { Box, TextField, Button, Typography } from '@mui/material';
@@ -14,47 +11,11 @@ import IconButton from '@mui/material/IconButton';
 //import InfoIcon from '@mui/icons-material/Info';
 
 export default function Home() {
+
   const [artist, setArtist] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
-
-  const _recommendations = [
-    {
-      "artistName": "Yukon Blonde",
-      "track": {
-        "name": "Stairway",
-        "url": "https://www.last.fm/music/Yukon+Blonde/_/Stairway",
-        "imageUrl": image_1,
-      }
-    },
-    {
-      "artistName": "Ivan & Alyosha",
-      "track": {
-        "name": "Girl",
-        "url": "https://www.last.fm/music/Ivan+/_/Girl",
-        "imageUrl": image_2,
-      }
-    },
-    {
-      "artistName": "Imaginary Cities",
-      "track": {
-        "name": "Marry The Sea (Bonus Track)",
-        "url": "https://www.last.fm/music/Imaginary+Cities/_/Marry+The+Sea+(Bonus+Track)",
-        "imageUrl": image_3,
-      }
-    },
-    {
-      "artistName": "Arkells",
-      "track": {
-        "name": "Never Thought That This Would Happen",
-        "url": "https://www.last.fm/music/Arkells/_/Never+Thought+That+This+Would+Happen",
-        "imageUrl": image_4,
-      }
-    },
-  ];
-
-  //_recommendations.tracks
 
   function handleInputChange(event: { target: { value: string } }) {
     setArtist(event.target.value);
@@ -72,7 +33,7 @@ export default function Home() {
     fetch(`/api/similar?artist=${artist}`)
       .then((response) => response.json())
       .then((data) => {
-        setRecommendations(data); setLoading(false);
+        setRecommendations(data.similarArtists); setLoading(false);
       })
       .catch((error) => {
         setError('Something went wrong. Please try again later.');
@@ -121,10 +82,10 @@ export default function Home() {
         <ImageListItem key="Subheader" cols={2}>
           <ListSubheader component="div">Artists List LIST</ListSubheader>
         </ImageListItem>
-        {_recommendations.map((item, index) => (
+        {recommendations.map((item, index) => (
           <ImageListItem key={index}>
             <img
-              src={item.track.imageUrl}
+              src={item.image}
               alt={item.track.name}
               loading="lazy"
             />
@@ -145,106 +106,4 @@ export default function Home() {
       </ImageList>
     </Box>
   );
-}
-
-
-
-
-=======
-import axios from 'axios';
-
-interface Track {
-  name: string;
-  url: string;
-}
-
-interface SimilarArtist {
-  artistName: string;
-  track: Track;
-  image: string;
-}
-
-const Home = () => {
-  const [artists, setArtists] = useState<SimilarArtist[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [artistName, setArtistName] = useState<string>('');
-
-  const fetchSimilarArtists = async (artist: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(`/api/similar`, {
-        params: { artist },
-      });
-
-      if (response.data.similarArtists) {
-        setArtists(response.data.similarArtists);
-      } else {
-        setError('No similar artists found.');
-      }
-    } catch (err) {
-      setError('Failed to fetch similar artists.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <h1>Find Similar Artists</h1>
-      <input
-        type="text"
-        placeholder="Enter an artist name"
-        value={artistName}
-        onChange={(e) => setArtistName(e.target.value)}
-      />
-      <button onClick={() => fetchSimilarArtists(artistName)} disabled={loading}>
-        {loading ? 'Loading...' : 'Search'}
-      </button>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {artists.length > 0 && (
-        <div>
-          {artists.map((artist) => (
-            <div key={artist.artistName} style={{ marginBottom: '20px' }}>
-              {artist.image ? (
-                <img
-                  src={artist.image}
-                  alt={artist.artistName}
-                  style={{
-                    width: '150px',
-                    height: '150px',
-                    borderRadius: '8px',
-                    objectFit: 'cover',
-                  }}
-                />
-              ) : (
-                <img
-                  src="/path/to/fallback-image.jpg" 
-                  alt="Fallback"
-                  style={{
-                    width: '150px',
-                    height: '150px',
-                    borderRadius: '8px',
-                    objectFit: 'cover',
-                  }}
-                />
-              )}
-              <h2>{artist.artistName}</h2>
-              <p>
-                <a href={artist.track.url} target="_blank" rel="noopener noreferrer">
-                  {artist.track.name}
-                </a>
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Home;
-
+} 

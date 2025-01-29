@@ -12,6 +12,8 @@ import typeDefs from './graphql/typeDefs.js';
 import resolvers from './graphql/resolvers.js';
 import { authenticateToken } from './utils/auth.js';
 
+import { fileURLToPath } from 'url';
+
 const server = new ApolloServer({
   typeDefs,
   resolvers
@@ -26,6 +28,17 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+
+//app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
+//app.use('/images', express.static('./assets'));
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Set the static directory
+app.use(express.static(path.join(__dirname, 'assets')));
 
 
 const shuffleArray = (array) => {
@@ -56,7 +69,8 @@ app.get('/api/similar', async (req, res) => {
       const lastFmArtistResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${artistName}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
       const lastFmArtistData = await lastFmArtistResponse.json();
 
-      const artistImage = lastFmArtistData.artist?.image?.find(image => image.size === 'mega')?.url || '';
+      //const artistImage = lastFmArtistData.artist?.image?.find(image => image.size === 'mega')?.url || '';
+      const artistImage = '/images/marcela-laskoski-YrtFlrLo2DQ-unsplash.jpg';
 
       if (!lastFmData.toptracks || !lastFmData.toptracks.track.length) {
         console.error(`No top tracks found for ${artistName}.`);
