@@ -19,7 +19,12 @@
         "cors": "^2.8.5",
         "dotenv": "^16.0.3",
         "express": "^4.19.2",
-        "mongoose": "^8.0.0"
+        "mongoose": "^8.0.0",
+        "@apollo/server": "^4.10.4",
+        "bcrypt": "^5.0.0",
+        "graphql": "^16.9.0",
+        "jsonwebtoken": "^8.5.1"
+      
     },
     "devDependencies": {
         "apollo-server-express": "^3.13.0",
