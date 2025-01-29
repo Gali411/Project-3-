@@ -1,76 +1,250 @@
-import { useState } from 'react';
 
-interface Track {
-  rank: number;
-  name: string;
-  playcount: number;
-  url: string;
-}
 
-interface ArtistData {
-  similarArtist: string;
-  tracks: Track[];
-}
+import image_1 from '../assets/music/image_1.avif';
+import image_2 from '../assets/music/image_2.avif';
+import image_3 from '../assets/music/image_3.avif';
+import image_4 from '../assets/music/image_4.avif';
+
+import ImageList from '@mui/material/ImageList';
+import { Box, TextField, Button, Typography } from '@mui/material';
+import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
+import ListSubheader from '@mui/material/ListSubheader';
+import IconButton from '@mui/material/IconButton';
+//import InfoIcon from '@mui/icons-material/Info';
 
 export default function Home() {
-  const [artist, setArtist] = useState<string>('');
-  const [artistData, setArtistData] = useState<ArtistData | null>(null);
-  const [error, setError] = useState<string>('');
+  const [artist, setArtist] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const _recommendations = [
+    {
+      "artistName": "Yukon Blonde",
+      "track": {
+        "name": "Stairway",
+        "url": "https://www.last.fm/music/Yukon+Blonde/_/Stairway",
+        "imageUrl": image_1,
+      }
+    },
+    {
+      "artistName": "Ivan & Alyosha",
+      "track": {
+        "name": "Girl",
+        "url": "https://www.last.fm/music/Ivan+/_/Girl",
+        "imageUrl": image_2,
+      }
+    },
+    {
+      "artistName": "Imaginary Cities",
+      "track": {
+        "name": "Marry The Sea (Bonus Track)",
+        "url": "https://www.last.fm/music/Imaginary+Cities/_/Marry+The+Sea+(Bonus+Track)",
+        "imageUrl": image_3,
+      }
+    },
+    {
+      "artistName": "Arkells",
+      "track": {
+        "name": "Never Thought That This Would Happen",
+        "url": "https://www.last.fm/music/Arkells/_/Never+Thought+That+This+Would+Happen",
+        "imageUrl": image_4,
+      }
+    },
+  ];
+
+  //_recommendations.tracks
+
+  function handleInputChange(event: { target: { value: string } }) {
     setArtist(event.target.value);
-  };
+  }
 
-  const submit = async () => {
+  function submit() {
     if (!artist) {
       setError('Please enter an artist name');
       return;
     }
 
-    setError('');
+    setLoading(true);
+    setError(null); // Reset error on new request
+
+    fetch(`/api/similar?artist=${artist}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setRecommendations(data); setLoading(false);
+      })
+      .catch((error) => {
+        setError('Something went wrong. Please try again later.');
+        setLoading(false);
+      });
+  }
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '80vh',
+        textAlign: 'center',
+        padding: 2,
+        backgroundColor: 'lightgray',
+      }}
+    >
+      <Typography variant="h4" gutterBottom>
+        Artist Recommendations
+      </Typography>
+
+      <TextField
+        value={artist}
+        onChange={handleInputChange}
+        label="Enter artist name"
+        variant="filled"
+        fullWidth
+        className="custom-label" // Add custom CSS class here
+        sx={{
+          marginBottom: 6,
+          width: '100%',
+          maxWidth: 600,
+        }}
+      />
+
+      <Button onClick={submit} variant="contained" disabled={loading}>
+        {loading ? 'Loading...' : 'Submit'}
+      </Button>
+
+      {error && <Typography color="error" sx={{ marginTop: 2 }}>{error}</Typography>}
+
+      <ImageList sx={{ width: 900, height: 800, marginTop: 4 }}>
+        <ImageListItem key="Subheader" cols={2}>
+          <ListSubheader component="div">Artists List LIST</ListSubheader>
+        </ImageListItem>
+        {_recommendations.map((item, index) => (
+          <ImageListItem key={index}>
+            <img
+              src={item.track.imageUrl}
+              alt={item.track.name}
+              loading="lazy"
+            />
+            <ImageListItemBar
+              title={item.track.name}
+              subtitle={item.artistName}
+              actionIcon={
+                <IconButton
+                  sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                  aria-label={`info about ${item.track.name}`}
+                >
+
+                </IconButton>
+              }
+            />
+          </ImageListItem>
+        ))}
+      </ImageList>
+    </Box>
+  );
+}
+
+
+
+
+=======
+import axios from 'axios';
+
+interface Track {
+  name: string;
+  url: string;
+}
+
+interface SimilarArtist {
+  artistName: string;
+  track: Track;
+  image: string;
+}
+
+const Home = () => {
+  const [artists, setArtists] = useState<SimilarArtist[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [artistName, setArtistName] = useState<string>('');
+
+  const fetchSimilarArtists = async (artist: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`/api/similar?artist=${artist}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch similar artist data');
+      const response = await axios.get(`/api/similar`, {
+        params: { artist },
+      });
+
+      if (response.data.similarArtists) {
+        setArtists(response.data.similarArtists);
+      } else {
+        setError('No similar artists found.');
       }
-      const data = await response.json();
-      setArtistData(data);
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Error fetching data');
+    } catch (err) {
+      setError('Failed to fetch similar artists.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
       <h1>Find Similar Artists</h1>
-
       <input
         type="text"
-        value={artist}
-        onChange={handleInputChange}
-        placeholder="Enter artist name"
+        placeholder="Enter an artist name"
+        value={artistName}
+        onChange={(e) => setArtistName(e.target.value)}
       />
-
-      <button onClick={submit}>Submit</button>
+      <button onClick={() => fetchSimilarArtists(artistName)} disabled={loading}>
+        {loading ? 'Loading...' : 'Search'}
+      </button>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {artistData && (
+      {artists.length > 0 && (
         <div>
-          <h2>Similar Artist: {artistData.similarArtist}</h2>
-          <h3>Top Tracks:</h3>
-          <ul>
-            {artistData.tracks.map((track) => (
-              <li key={track.rank}>
-                <strong>{track.rank}. {track.name}</strong> - Played {track.playcount} times
-                <br />
-                <a href={track.url} target="_blank" rel="noopener noreferrer">Listen here</a>
-              </li>
-            ))}
-          </ul>
+          {artists.map((artist) => (
+            <div key={artist.artistName} style={{ marginBottom: '20px' }}>
+              {artist.image ? (
+                <img
+                  src={artist.image}
+                  alt={artist.artistName}
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <img
+                  src="/path/to/fallback-image.jpg" 
+                  alt="Fallback"
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                  }}
+                />
+              )}
+              <h2>{artist.artistName}</h2>
+              <p>
+                <a href={artist.track.url} target="_blank" rel="noopener noreferrer">
+                  {artist.track.name}
+                </a>
+              </p>
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
-}
+};
+
+export default Home;
+

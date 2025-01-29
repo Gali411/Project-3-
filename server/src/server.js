@@ -20,9 +20,6 @@ const server = new ApolloServer({
 
 
 
-
-
-
 dotenv.config();
 
 const app = express();
@@ -30,6 +27,13 @@ const PORT = process.env.PORT || 3001;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1)); 
+    [array[i], array[j]] = [array[j], array[i]]; 
+  }
+};
 
 
 app.get('/api/similar', async (req, res) => {
@@ -40,43 +44,59 @@ app.get('/api/similar', async (req, res) => {
     
     if (!similarArtistData || !similarArtistData.similar || !similarArtistData.similar.results.length) {
       console.error("No similar artists found.");
-      return;
+      return res.status(404).json({ error: "No similar artists found." });
     }
 
-    const similarArtist = similarArtistData.similar.results[0].name;
-    console.log(`Similar artist found: ${similarArtist}`);
+    const similarArtists = similarArtistData.similar.results.map(artist => artist.name);
 
-    const lastFmResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist=${similarArtist}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
-    const lastFmData = await lastFmResponse.json();
-    
-    if (!lastFmData.toptracks || !lastFmData.toptracks.track.length) {
-      console.error("No top tracks found for the similar artist.");
-      return;
-    }
+    const artistTopTracksPromises = similarArtists.map(async (artistName) => {
+      const lastFmResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist=${artistName}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+      const lastFmData = await lastFmResponse.json();
 
-    console.log(`Top tracks for ${similarArtist}:`);
-    lastFmData.toptracks.track.forEach((track, index) => {
-      console.log(`${index + 1}. ${track.name} - Played ${track.playcount} times`);
-      console.log(`   Listen here: ${track.url}`);
+      const lastFmArtistResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${artistName}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+      const lastFmArtistData = await lastFmArtistResponse.json();
+
+      const artistImage = lastFmArtistData.artist?.image?.find(image => image.size === 'mega')?.url || '';
+
+      if (!lastFmData.toptracks || !lastFmData.toptracks.track.length) {
+        console.error(`No top tracks found for ${artistName}.`);
+        return null;
+      }
+
+      const randomTrackIndex = Math.floor(Math.random() * lastFmData.toptracks.track.length);
+      const randomTrack = lastFmData.toptracks.track[randomTrackIndex];
+
+      const track = {
+        name: randomTrack.name,
+        url: randomTrack.url,
+      };
+
+      return {
+        artistName,
+        track,
+        image: artistImage,
+      };
     });
 
-    const tracks = lastFmData.toptracks.track.map((track, index) => ({
-      rank: index + 1,
-      name: track.name,
-      playcount: track.playcount,
-      url: track.url,
-    }));
+    const similarArtistsWithRandomTrack = await Promise.all(artistTopTracksPromises);
+    
+    const filteredSimilarArtists = similarArtistsWithRandomTrack.filter(item => item !== null);
+
+    if (!filteredSimilarArtists.length) {
+      return res.status(404).json({ error: "No top tracks found for similar artists." });
+    }
+
+    shuffleArray(filteredSimilarArtists);
 
     res.json({
-      similarArtist,
-      tracks,
+      similarArtists: filteredSimilarArtists,
     });
 
   } catch (error) {
     console.error("Error fetching data:", error);
+    res.status(500).json({ error: "An error occurred while fetching data." });
   }
-
-})
+});
 
 
 const startApolloServer = async () => {
