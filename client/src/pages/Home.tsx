@@ -1,6 +1,17 @@
-import { useState } from 'react';
+
+
+import React, { useState } from 'react';
+
+import ImageList from '@mui/material/ImageList';
+import { Box, TextField, Button, Typography } from '@mui/material';
+import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
+import ListSubheader from '@mui/material/ListSubheader';
+import IconButton from '@mui/material/IconButton';
+//import InfoIcon from '@mui/icons-material/Info';
 
 export default function Home() {
+
   const [artist, setArtist] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +33,7 @@ export default function Home() {
     fetch(`/api/similar?artist=${artist}`)
       .then((response) => response.json())
       .then((data) => {
-        setRecommendations(data);
-        setLoading(false);
+        setRecommendations(data.similarArtists); setLoading(false);
       })
       .catch((error) => {
         setError('Something went wrong. Please try again later.');
@@ -32,33 +42,68 @@ export default function Home() {
   }
 
   return (
-    <div>
-      <h1>Artist Recommendations</h1>
-      <input
-        type="text"
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '80vh',
+        textAlign: 'center',
+        padding: 2,
+        backgroundColor: 'lightgray',
+      }}
+    >
+      <Typography variant="h4" gutterBottom>
+        Artist Recommendations
+      </Typography>
+
+      <TextField
         value={artist}
         onChange={handleInputChange}
-        placeholder="Enter artist name"
+        label="Enter artist name"
+        variant="filled"
+        fullWidth
+        className="custom-label" // Add custom CSS class here
+        sx={{
+          marginBottom: 6,
+          width: '100%',
+          maxWidth: 600,
+        }}
       />
-      <button onClick={submit} disabled={loading}>
+
+      <Button onClick={submit} variant="contained" disabled={loading}>
         {loading ? 'Loading...' : 'Submit'}
-      </button>
+      </Button>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <Typography color="error" sx={{ marginTop: 2 }}>{error}</Typography>}
 
-      {recommendations.length > 0 && (
-        <div>
-          <h2>Recommendations for {artist}</h2>
-          <ul>
-            {recommendations.map((item, index) => (
-              <li key={index}>
-                <h3>{item.Name}</h3>
-                <p>{item.wTeaser}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+      <ImageList sx={{ width: 900, height: 800, marginTop: 4 }}>
+        <ImageListItem key="Subheader" cols={2}>
+          <ListSubheader component="div">Artists List LIST</ListSubheader>
+        </ImageListItem>
+        {recommendations.map((item, index) => (
+          <ImageListItem key={index}>
+            <img
+              src={item.image}
+              alt={item.track.name}
+              loading="lazy"
+            />
+            <ImageListItemBar
+              title={item.track.name}
+              subtitle={item.artistName}
+              actionIcon={
+                <IconButton
+                  sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                  aria-label={`info about ${item.track.name}`}
+                >
+
+                </IconButton>
+              }
+            />
+          </ImageListItem>
+        ))}
+      </ImageList>
+    </Box>
   );
-}
+} 

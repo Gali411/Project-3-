@@ -2,13 +2,13 @@
     "name": "server",
     "version": "1.0.0",
     "description": "Backend server for the project",
-    "main": "src/index.js",
+    "main": "server.js",
     "type": "module",
     "scripts": {
         "build": "echo 'Build step skipped as TypeScript is no longer used'",
         "seed": "node src/seeds/seed.js",
-        "start": "node src/index.js",
-        "dev": "nodemon src/index.js",
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
         "test": "vitest"
     },
     "keywords": [],
@@ -19,7 +19,12 @@
         "cors": "^2.8.5",
         "dotenv": "^16.0.3",
         "express": "^4.19.2",
-        "mongoose": "^8.0.0"
+        "mongoose": "^8.0.0",
+        "@apollo/server": "^4.10.4",
+        "bcrypt": "^5.0.0",
+        "graphql": "^16.9.0",
+        "jsonwebtoken": "^8.5.1"
+      
     },
     "devDependencies": {
         "apollo-server-express": "^3.13.0",
