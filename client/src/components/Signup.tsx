@@ -1,75 +1,90 @@
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { REGISTER_USER } from '../graphql/mutations'; // Adjust the path if needed
-import { useNavigate } from 'react-router-dom';
+import { REGISTER_USER } from '../graphql/mutations';
 
 import Auth from '../utils/auth';
 
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+
 const Signup = () => {
-    const [formState, setFormState] = useState({
-        username: '',
-        email: '',
-        password: '',
+  const [formState, setFormState] = useState({
+    username: '',
+    email: '',
+    password: '',
+  });
+  const [registerUser, { loading, error }] = useMutation(REGISTER_USER);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormState({
+      ...formState,
+      [name]: value,
     });
-    const navigate = useNavigate();
+  };
 
-    const [registerUser, { loading, error }] = useMutation(REGISTER_USER);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { data } = await registerUser({
+        variables: { ...formState },
+      });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormState({
-            ...formState,
-            [name]: value,
-        });
-    };
+      Auth.setToken(data.registerUser.token); // Save the token
+      window.location.href = '/'; // Redirect on success
+    } catch (err) {
+      console.error('Error registering user:', err);
+    }
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const { data } = await registerUser({
-                variables: { ...formState },
-            });
- 
-            Auth.setToken(data.registerUser.token); // Save the token
-            window.location.href = '/'; // Redirect on success
-        } catch (err) {
-            console.error('Error registering user:', err);
-        }
-    };
+  return (
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+      <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 'bold', mb: 2 }}>
+        Create a New Account
+      </Typography>
 
-    return (
-        <div>
-            <h2>Signup</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Username"
-                    value={formState.username}
-                    onChange={handleChange}
-                />
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formState.email}
-                    onChange={handleChange}
-                />
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formState.password}
-                    onChange={handleChange}
-                />
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Signing up...' : 'Signup'}
-                </button>
-            </form>
-            {error && <p>Error: {error.message}</p>}
-        </div>
-    );
+      <Stack spacing={2}>
+        <TextField
+          label="Username"
+          name="username"
+          variant="outlined"
+          fullWidth
+          value={formState.username}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label="Email"
+          name="email"
+          type="email"
+          variant="outlined"
+          fullWidth
+          value={formState.email}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label="Password"
+          name="password"
+          type="password"
+          variant="outlined"
+          fullWidth
+          value={formState.password}
+          onChange={handleChange}
+        />
+
+        <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+          {loading ? 'Signing up...' : 'Sign Up'}
+        </Button>
+
+        {error && <Alert severity="error">{error.message}</Alert>}
+      </Stack>
+    </Box>
+  );
 };
 
 export default Signup;
-

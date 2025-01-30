@@ -21,7 +21,10 @@ export default function Home() {
     setArtist(event.target.value);
   }
 
-  function submit() {
+  function submit(e:any) {
+
+    e.preventDefault();
+    
     if (!artist) {
       setError('Please enter an artist name');
       return;
@@ -33,7 +36,7 @@ export default function Home() {
     fetch(`/api/similar?artist=${artist}`)
       .then((response) => response.json())
       .then((data) => {
-        setRecommendations(data.similarArtists); setLoading(false);
+        setRecommendations(data.similarArtists || []); setLoading(false);
       })
       .catch((error) => {
         setError('Something went wrong. Please try again later.');
@@ -46,41 +49,49 @@ export default function Home() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        alignItems: 'stretch',
         justifyContent: 'center',
         minHeight: '80vh',
         textAlign: 'center',
-        padding: 2,
+        padding: '60px',
         backgroundColor: 'lightgray',
       }}
     >
-      <Typography variant="h4" gutterBottom>
-        Artist Recommendations
+      <Typography variant="h4" gutterBottom sx={{
+        //color: 'red',
+        fontWeight: 300,
+      }}>
+        Music Finder
       </Typography>
 
-      <TextField
-        value={artist}
-        onChange={handleInputChange}
-        label="Enter artist name"
-        variant="filled"
-        fullWidth
-        className="custom-label" // Add custom CSS class here
-        sx={{
-          marginBottom: 6,
-          width: '100%',
-          maxWidth: 600,
-        }}
-      />
+      {/* Input and Submit Button Side by Side */}
+      <form onSubmit={submit} style={{
+        display: 'flex',
+        justifyContent: 'center',
+      }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: '100%', maxWidth: 600, justifyContent: 'flex-end' }}>
+          
+          <TextField
+            value={artist}
+            onChange={handleInputChange}
+            label="Enter artist name"
+            variant="filled"
+            fullWidth
+            className="custom-label"
+          />
+          <Button onClick={submit} variant="contained" disabled={loading}>
+            {loading ? 'Loading...' : 'Submit'}
+          </Button>
 
-      <Button onClick={submit} variant="contained" disabled={loading}>
-        {loading ? 'Loading...' : 'Submit'}
-      </Button>
+        </Box>
+      </form>
+
 
       {error && <Typography color="error" sx={{ marginTop: 2 }}>{error}</Typography>}
 
-      <ImageList sx={{ width: 900, height: 800, marginTop: 4 }}>
+      <ImageList sx={{ width: 900, height: 800, margin: 'auto', marginTop: 4 }}>
         <ImageListItem key="Subheader" cols={2}>
-          <ListSubheader component="div">Artists List LIST</ListSubheader>
+          <ListSubheader component="div">Artists List </ListSubheader>
         </ImageListItem>
         {recommendations.map((item, index) => (
           <ImageListItem key={index}>
