@@ -1,26 +1,23 @@
-
-
 import React, { useState } from 'react';
-
 import ImageList from '@mui/material/ImageList';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import ListSubheader from '@mui/material/ListSubheader';
 import IconButton from '@mui/material/IconButton';
-//import InfoIcon from '@mui/icons-material/Info';
 
 export default function Home() {
-
   const [artist, setArtist] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
 
+  // Handle input changes
   function handleInputChange(event: { target: { value: string } }) {
     setArtist(event.target.value);
   }
 
+  // Submit the artist name and fetch recommendations
   function submit() {
     if (!artist) {
       setError('Please enter an artist name');
@@ -33,7 +30,12 @@ export default function Home() {
     fetch(`/api/similar?artist=${artist}`)
       .then((response) => response.json())
       .then((data) => {
-        setRecommendations(data.similarArtists || []); setLoading(false);
+        if (data.similarArtists) {
+          setRecommendations(data.similarArtists); // Set fetched recommendations
+        } else {
+          setError('No similar artists found.');
+        }
+        setLoading(false);
       })
       .catch((error) => {
         setError('Something went wrong. Please try again later.');
@@ -64,7 +66,7 @@ export default function Home() {
         label="Enter artist name"
         variant="filled"
         fullWidth
-        className="custom-label" // Add custom CSS class here
+        className="custom-label"
         sx={{
           marginBottom: 6,
           width: '100%',
@@ -80,24 +82,34 @@ export default function Home() {
 
       <ImageList sx={{ width: 900, height: 800, marginTop: 4 }}>
         <ImageListItem key="Subheader" cols={2}>
-          <ListSubheader component="div">Artists List LIST</ListSubheader>
+          <ListSubheader component="div">Artist Recommendations</ListSubheader>
         </ImageListItem>
+
         {recommendations.map((item, index) => (
           <ImageListItem key={index}>
             <img
-              src={item.image}
+              src={item.image || 'https://via.placeholder.com/150'} // Fallback image if no image is available
               alt={item.track.name}
               loading="lazy"
             />
             <ImageListItemBar
-              title={item.track.name}
+              title={
+                <a
+                  href={item.track.url} // Make the track name a clickable link
+                  target="_blank"        // Open in a new tab
+                  rel="noopener noreferrer" // For security reasons
+                  style={{ color: 'white', textDecoration: 'none' }} // Style the link
+                >
+                  {item.track.name}
+                </a>
+              }
               subtitle={item.artistName}
               actionIcon={
                 <IconButton
                   sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                   aria-label={`info about ${item.track.name}`}
                 >
-
+                  {/* Optional: Add icon or info */}
                 </IconButton>
               }
             />
@@ -106,4 +118,4 @@ export default function Home() {
       </ImageList>
     </Box>
   );
-} 
+}

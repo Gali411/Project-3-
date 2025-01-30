@@ -1,4 +1,5 @@
 
+
 import dotenv from 'dotenv';
 import axios from 'axios';
 import express from 'express';
@@ -18,9 +19,6 @@ const server = new ApolloServer({
   typeDefs,
   resolvers
 });
-
-
-
 
 dotenv.config();
 
@@ -48,6 +46,58 @@ const shuffleArray = (array) => {
   }
 };
 
+const clientId = process.env.SPOTIFY_CLIENT_ID
+const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
+
+async function getAccessToken() {
+  const url = 'https://accounts.spotify.com/api/token';
+  const headers = {
+    'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret),
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  const body = 'grant_type=client_credentials';
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: headers,
+    body: body
+  });
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function getArtistInfo(artistId) {
+  const accessToken = await getAccessToken();
+  const url = `https://api.spotify.com/v1/artists/${artistId}`;
+  const headers = {
+    'Authorization': `Bearer ${accessToken}`
+  };
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: headers
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+async function searchArtist(name) {
+  const accessToken = await getAccessToken();
+  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1`;
+  const headers = {
+    'Authorization': `Bearer ${accessToken}`
+  };
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: headers
+  });
+
+  const data = await response.json();
+  return data.artists.items[0].id; 
+}
 
 app.get('/api/similar', async (req, res) => {
   const artist = req.query.artist;
@@ -63,36 +113,41 @@ app.get('/api/similar', async (req, res) => {
     const similarArtists = similarArtistData.similar.results.map(artist => artist.name);
 
     const artistTopTracksPromises = similarArtists.map(async (artistName) => {
-      const lastFmResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist=${artistName}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
-      const lastFmData = await lastFmResponse.json();
+      const artistId = await searchArtist(artistName);
 
-      const lastFmArtistResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${artistName}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
-      const lastFmArtistData = await lastFmArtistResponse.json();
+      const topTracksResponse = await fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${await getAccessToken()}`,
+        },
+      });
 
-      //const artistImage = lastFmArtistData.artist?.image?.find(image => image.size === 'mega')?.url || '';
-      const artistImage = '/images/marcela-laskoski-YrtFlrLo2DQ-unsplash.jpg';
-
-      if (!lastFmData.toptracks || !lastFmData.toptracks.track.length) {
+      const topTracksData = await topTracksResponse.json();
+      
+      if (!topTracksData.tracks || topTracksData.tracks.length === 0) {
         console.error(`No top tracks found for ${artistName}.`);
         return null;
       }
 
-      const randomTrackIndex = Math.floor(Math.random() * lastFmData.toptracks.track.length);
-      const randomTrack = lastFmData.toptracks.track[randomTrackIndex];
+      const randomTrackIndex = Math.floor(Math.random() * topTracksData.tracks.length);
+      const randomTrack = topTracksData.tracks[randomTrackIndex];
 
-      const track = {
-        name: randomTrack.name,
-        url: randomTrack.url,
-      };
+      const artistInfo = await getArtistInfo(artistId);
+      const artistImage = artistInfo.images && artistInfo.images.length > 0 ? artistInfo.images[0].url : null;
 
       return {
         artistName,
-        track,
+        track: {
+          name: randomTrack.name,
+          url: randomTrack.external_urls.spotify, 
+        },
         image: artistImage,
       };
     });
 
+    
     const similarArtistsWithRandomTrack = await Promise.all(artistTopTracksPromises);
+    
     
     const filteredSimilarArtists = similarArtistsWithRandomTrack.filter(item => item !== null);
 
@@ -100,6 +155,7 @@ app.get('/api/similar', async (req, res) => {
       return res.status(404).json({ error: "No top tracks found for similar artists." });
     }
 
+    
     shuffleArray(filteredSimilarArtists);
 
     res.json({
@@ -112,13 +168,12 @@ app.get('/api/similar', async (req, res) => {
   }
 });
 
+
 const startApolloServer = async () => {
 
 
   await server.start();
   await db();
-
-
 
   app.use('/graphql', expressMiddleware(server,
     {
