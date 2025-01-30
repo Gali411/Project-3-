@@ -49,7 +49,7 @@ export default function Home() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        alignItems: 'stretch',
         justifyContent: 'center',
         minHeight: '80vh',
         textAlign: 'center',
@@ -65,7 +65,10 @@ export default function Home() {
       </Typography>
 
       {/* Input and Submit Button Side by Side */}
-      <form onSubmit={submit}>
+      <form onSubmit={submit} style={{
+        display: 'flex',
+        justifyContent: 'center',
+      }}>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: '100%', maxWidth: 600, justifyContent: 'flex-end' }}>
           
           <TextField
@@ -88,7 +91,7 @@ export default function Home() {
 
       <ImageList sx={{ width: 900, height: 800, marginTop: 4 }}>
         <ImageListItem key="Subheader" cols={2}>
-          <ListSubheader component="div">Artists List LIST</ListSubheader>
+          <ListSubheader component="div">Artists List </ListSubheader>
         </ImageListItem>
         {recommendations.map((item, index) => (
           <ImageListItem key={index}>
