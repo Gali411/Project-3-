@@ -53,7 +53,7 @@ export default function Home() {
         justifyContent: 'center',
         minHeight: '80vh',
         textAlign: 'center',
-        padding: 4,
+        padding: '60px',
         backgroundColor: 'lightgray',
       }}
     >
@@ -89,7 +89,7 @@ export default function Home() {
 
       {error && <Typography color="error" sx={{ marginTop: 2 }}>{error}</Typography>}
 
-      <ImageList sx={{ width: 900, height: 800, marginTop: 4 }}>
+      <ImageList sx={{ width: 900, height: 800, margin: 'auto', marginTop: 4 }}>
         <ImageListItem key="Subheader" cols={2}>
           <ListSubheader component="div">Artists List </ListSubheader>
         </ImageListItem>

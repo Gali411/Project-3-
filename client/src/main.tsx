@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App.tsx';
 import Home from './pages/Home.tsx';
 import Error from './pages/Error.tsx';
-
+import "./main.css";
 
 const router = createBrowserRouter([
     {

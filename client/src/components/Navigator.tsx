@@ -34,7 +34,10 @@ const Navigator = () => {
   const token = Auth.getToken();
 
   return (
-    <div>
+    <div style={{
+      padding: 20,
+      backgroundColor: 'white',
+    }}>
       <Button 
         variant="contained" 
         color="primary" 
